@@ -16,26 +16,12 @@ cd Zer0-Dex-Auto
 npm init -y
 npm install dotenv ethers
 ```
-**bikin .env file**
+**buka .env file**
 ```
 nano .env
 ```
-**isi ini di dalam filenya**
-isi private key & ubah swap count ( jumlah swap )
-```
-RPC_URL=https://evmrpc-testnet.0g.ai
-ZER0DEX_CONTRACT=0x44f24B66b3BAa3A784dBeee9bFE602f15A2Cc5d9
-SWAP_COUNT=1 # ganti sesuai jumlah swap
-
-ETH_TOKEN=0x0fe9b43625fa7edd663adcec0728dd635e4abf7c
-BTC_TOKEN=0x36f6414ff1df609214ddaba71c84f18bcf00f67d
-USDT_TOKEN=0x3ec8a8705be1d5ca90066b37ba62c4183b024ebf
-
-PRIVATE_KEY_1=0x
-PRIVATE_KEY_2=0x
-# Tambahkan sebanyak yang perlu
-```
-klik ctrl + x -> klik y -> klik enter (untuk keluar)
+= isi private key & ubah swap count ( jumlah swap )
+= klik ctrl + x -> klik y -> klik enter (untuk keluar)
 **Mainkan script**
 ```
 node main.js
