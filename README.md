@@ -1,6 +1,6 @@
 # Zer0 Dex Auto From Airdrop Sambil Rebahan
 
-![Banner](assets/Untitled.png)
+![Zer0-Dex](https://raw.githubusercontent.com/yonarebahan/Zer0-Dex-Auto/main/Untitled.png)
 
 # Fitur
 - Swap token acak (ETH, BTC, USDT)
