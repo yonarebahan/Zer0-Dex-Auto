@@ -1,5 +1,4 @@
 # Zer0 Dex Auto From Airdrop Sambil Rebahan
-gunakan dengan bijak
 
 # Fitur
 - Swap token acak (ETH, BTC, USDT)
