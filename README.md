@@ -32,7 +32,7 @@ node main.js
 ## DISCLAIMER
 Gunakan dengan bijak, semua risiko dan tanggung jawab ada di tangan pengguna.
 
-# Support by MyBrain, Chat GPT AI & Join Channel Airdrop Sambil Rebahan : https://t.me/kingfeeder
+## Support by MyBrain, Chat GPT AI & Join Channel Airdrop Sambil Rebahan : https://t.me/kingfeeder
 
 ## ☕ Donate for Coffee
 
