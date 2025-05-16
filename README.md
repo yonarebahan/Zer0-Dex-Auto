@@ -1,5 +1,7 @@
 # Zer0 Dex Auto From Airdrop Sambil Rebahan
 
+![Banner](assets/untitled.png)
+
 # Fitur
 - Swap token acak (ETH, BTC, USDT)
 - Add liquidity acak ke berbagai pasangan
