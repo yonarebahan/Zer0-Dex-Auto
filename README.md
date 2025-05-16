@@ -20,7 +20,7 @@ npm install dotenv ethers
 ```
 nano .env
 ```
-= isi private key & ubah swap count ( jumlah swap )
+= isi private key & ubah swap count ( jumlah swap ) /n
 = klik ctrl + x -> klik y -> klik enter (untuk keluar)
 **Mainkan script**
 ```
