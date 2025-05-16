@@ -1,4 +1,4 @@
-# TeaSwap From Airdrop Sambil Rebahan
+# Zer0 Dex Auto From Airdrop Sambil Rebahan
 gunakan dengan bijak
 
 # Fitur
