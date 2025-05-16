@@ -33,7 +33,7 @@ PRIVATE_KEY_1=0x
 PRIVATE_KEY_2=0x
 # Tambahkan sebanyak yang perlu
 ```
-klik ctrl+x klik y klik enter (untuk keluar)
+klik ctrl + x -> klik y -> klik enter (untuk keluar)
 **Mainkan script**
 ```
 node main.js
