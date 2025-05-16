@@ -7,6 +7,8 @@
 - Add liquidity acak ke berbagai pasangan
 - Support multi akun wallet
 
+## Claim Faucet : https://test.zer0.exchange/faucet
+
 **Install Script**
 ```
 git clone https://github.com/yonarebahan/Zer0-Dex-Auto.git
