@@ -126,8 +126,8 @@ async function main() {
       const [fromToken, toToken] = getRandomTokenPair();
       const token = new ethers.Contract(fromToken.address, erc20Abi, wallet);
 
-      const decimals = await token.decimals();
-      const balance = await token.balanceOf(walletAddress);
+      const decimals = await withRetry(() => token.decimals(), 3, `${fromToken.symbol} decimals`);
+      const balance = await withRetry(() => token.balanceOf(walletAddress), 3, `${fromToken.symbol} balance`);
       if (balance === 0n) {
         console.log(`Saldo ${fromToken.symbol} kosong. Skip.`);
         continue;
@@ -137,12 +137,15 @@ async function main() {
       const amountIn = BigInt(Math.floor(Number(balance) * percentage));
       const amountOutMin = amountIn / 2n;
 
-      const allowance = await token.allowance(walletAddress, routerAddress);
+      const allowance = await withRetry(() => token.allowance(walletAddress, routerAddress), 3, `${fromToken.symbol} allowance`);
       if (allowance < amountIn) {
         console.log(`Approving ${fromToken.symbol}...`);
-        const approveTx = await token.approve(routerAddress, amountIn);
-        await approveTx.wait();
+        await withRetry(async () => {
+          const approveTx = await token.approve(routerAddress, amountIn);
+          await approveTx.wait();
+        }, 3, `Approve ${fromToken.symbol}`);
       }
+
 
       const deadline = Math.floor(Date.now() / 1000) + 600;
 
@@ -160,14 +163,16 @@ async function main() {
       console.log(`\u{1F501} Swap ${fromToken.symbol} → ${toToken.symbol} | Amount: ${ethers.formatUnits(amountIn, decimals)}`);
 
       try {
-        const tx = await router.exactInputSingle(params, { gasLimit: 300000n });
-        const receipt = await tx.wait();
-        console.log(`✅ Swap Success! Tx Hash: ${receipt.hash}`);
+        await withRetry(async () => {
+          const tx = await router.exactInputSingle(params, { gasLimit: 300000n });
+          const receipt = await tx.wait();
+          console.log(`✅ Swap Success! Tx Hash: ${receipt.hash}`);
+        }, 3, `Swap ${fromToken.symbol} → ${toToken.symbol}`);
       } catch (err) {
         console.error(`❌ Gagal swap ${fromToken.symbol} → ${toToken.symbol}:`, err?.shortMessage || err);
       }
 
-      await getRandomDelay();
+      await new Promise(resolve => setTimeout(resolve, 60_000)); // delay 1 menit
     }
 
     // === MINT ===
@@ -182,16 +187,16 @@ async function main() {
       const token0 = new ethers.Contract(addr0, erc20Abi, wallet);
       const token1 = new ethers.Contract(addr1, erc20Abi, wallet);
 
-      const bal0 = await token0.balanceOf(walletAddress);
-      const bal1 = await token1.balanceOf(walletAddress);
+      const bal0 = await withRetry(() => token0.balanceOf(walletAddress), 3, `[${r}] ${name0} balance`);
+      const bal1 = await withRetry(() => token1.balanceOf(walletAddress), 3, `[${r}] ${name1} balance`);
 
       if (bal0 === 0n || bal1 === 0n) {
         console.log(`[${r}] ❌ Saldo ${name0}/${name1} kosong. Skip.`);
         continue;
       }
 
-      const dec0 = await token0.decimals();
-      const dec1 = await token1.decimals();
+      const dec0 = await withRetry(() => token0.decimals(), 3, `[${r}] ${name0} decimals`);
+      const dec1 = await withRetry(() => token1.decimals(), 3, `[${r}] ${name1} decimals`);
 
       const pct0 = getRandomPercent();
       const pct1 = getRandomPercent();
@@ -202,8 +207,9 @@ async function main() {
       console.log(`→ ${pct0}% ${name0}: ${ethers.formatUnits(amt0, dec0)}`);
       console.log(`→ ${pct1}% ${name1}: ${ethers.formatUnits(amt1, dec1)}`);
 
-      await token0.approve(zer0dexAddress, amt0);
-      await token1.approve(zer0dexAddress, amt1);
+      await withRetry(() => token0.approve(zer0dexAddress, amt0), 3, `[${r}] Approve ${name0}`);
+      await withRetry(() => token1.approve(zer0dexAddress, amt1), 3, `[${r}] Approve ${name1}`);
+
 
       const deadline = Math.floor(Date.now() / 1000) + 300;
 
@@ -222,22 +228,46 @@ async function main() {
       ];
 
       try {
-        const tx = await dex.mint(mintParams, { gasLimit: 600000 });
-        console.log(`[${r}] 🚀 TX terkirim: ${tx.hash}`);
-        await tx.wait();
-        console.log(`[${r}] 🎉 Sukses!`);
+        await withRetry(async () => {
+          const tx = await dex.mint(mintParams, { gasLimit: 600000 });
+          console.log(`[${r}] 🚀 TX terkirim: ${tx.hash}`);
+          await tx.wait();
+          console.log(`[${r}] 🎉 Sukses!`);
+        }, 3, `[${r}] Mint ${name0}/${name1}`);
+
       } catch (err) {
         console.error(`[${r}] ❌ Gagal mint:`, err.message);
       }
 
-      if (r < totalRuns) await getRandomDelay();
+      if (r < totalRuns) await getRandomDelay(55, 60);
     }
 
     console.log(`\n✅ Semua aksi selesai untuk wallet ${walletAddress}`);
   }
 }
 
-main().catch((err) => {
-  console.error('Fatal error:', err);
+async function withRetry(fn, maxRetries = 3, label = '') {
+  let attempt = 0;
+  while (attempt < maxRetries) {
+    try {
+      return await fn();
+    } catch (err) {
+      attempt++;
+      const errorMsg = (err.shortMessage || err.message || '').toLowerCase();
+      console.error(`${label} ❌ Gagal attempt ${attempt}:`, err.shortMessage || err.message || err);
+
+      if (attempt >= maxRetries) throw err;
+
+      const isServerError = errorMsg.includes('502') || errorMsg.includes('bad gateway');
+      const delay = isServerError ? 60_000 : 2000;
+
+      console.log(`🔁 Retry dalam ${delay / 1000} detik...`);
+      await new Promise(res => setTimeout(res, delay));
+    }
+  }
+}
+
+withRetry(() => main(), 3, "Main").catch((err) => {
+  console.error('❌ Fatal error after retries:', err.message || err);
   process.exit(1);
 });
